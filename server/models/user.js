@@ -1,4 +1,7 @@
 'use strict';
+var password = require('../../utils/Password');
+
+
 module.exports = function(sequelize, DataTypes) {
 
   var user = sequelize.define('user', {
@@ -13,5 +16,15 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
+
+
+    user.beforeCreate(function (user,callback) {
+
+        user.password = password.generateHash(user.password);
+
+
+    });
+
+
   return user;
 };

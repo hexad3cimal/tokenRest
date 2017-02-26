@@ -19,7 +19,7 @@ router.get('/', function(req, res) {
 
 router.post('/',function(req,res){
 
-  User.create(req.body).then(function (newUser) {
+  User.create(req.body,{individualHooks: true}).then(function (newUser) {
         res.status(200).json(newUser);
     })
         .catch(function (error){
