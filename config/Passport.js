@@ -9,9 +9,16 @@ User = require('../server/models').user;
 
 module.exports = function(passport) {
     var opts = {};
-    opts.secretOrKey = config.secret;
+    opts.secretOrKey = "jovin";
     passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-        User.find({id: jwt_payload.id}, function(err, user) {
+
+        console.log("jwt_payload"+jwt_payload)
+
+        User.find({where:{id: jwt_payload.id}}).then(function (user,err){
+
+            console.log("user"+user.password)
+
+
             if (err) {
                 return done(err, false);
             }
