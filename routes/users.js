@@ -7,36 +7,58 @@ require('../config/Passport')(passport);
 var jwt         = require('jwt-simple');
 
 /* GET users listing. */
-router.get('/', function(req, res) {
+router.get('/', passport.authenticate('jwt', { session: false}), function(req, res) {
 
-    User.findAll({
-    })
-        .then(function (users) {
-            res.status(200).json(users);
-        })
-        .catch(function (error) {
-            res.status(500).json(error);
+    var token = getToken(req.headers);
+    if (token) {
+        var decoded = jwt.decode(token, "jovin");
+
+        User.find({where :{
+            user_name: decoded.user_name
+        }}).then( function(user, err) {
+            if (err) throw err;
+
+            if (!user) {
+                return res.status(403).send({success: false, msg: 'Authentication failed. User not found.'});
+            } else {
+
+                User.findAll({ limit: 10
+                })
+                    .then(function (users) {
+                        res.status(200).json(users);
+                    })
+                    .catch(function (error) {
+                        res.status(500).json(error);
+                    });
+
+            }
         });
+    } else {
+        return res.status(403).send({success: false, msg: 'No token provided.'});
+    }
+
+
 
 });
 
 router.post('/',function(req,res){
 
   User.create(req.body,{individualHooks: true}).then(function (newUser) {
-        res.status(200).json(newUser);
+        res.status(200).json("Success!");
     })
         .catch(function (error){
-            res.status(500).json(error);
+            res.status(500).json("Error!");
         });
 });
 
 router.post('/authenticate', function(req, res) {
 
-    console.log(req.body.user_name)
+    console.log(req.body)
     User.find({where:
     {
         user_name: req.body.user_name
-    }}
+    }
+    }
     ).then(function(user) {
 
         console.log("Username"+user.user_name)
