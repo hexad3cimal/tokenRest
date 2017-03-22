@@ -108,7 +108,6 @@ router.get('/member', passport.authenticate('jwt', { session: false}), function(
 
 router.put('/', passport.authenticate('jwt', { session: false}), function(req, res) {
 
-    console.log("User>>>"+req.body)
 
     var token = getToken(req.headers);
     if (token) {
@@ -141,6 +140,41 @@ router.put('/', passport.authenticate('jwt', { session: false}), function(req, r
     } else {
         return res.status(403).send({success: false, msg: 'No token provided.'});
     }
+});
+
+router.delete('/', passport.authenticate('jwt', { session: false}), function(req, res) {
+
+    var token = getToken(req.headers);
+    if (token) {
+        var decoded = jwt.decode(token, "jovin");
+
+        User.find({where :{
+            user_name: decoded.user_name
+        }}).then( function(user, err) {
+            if (err) throw err;
+
+            if (!user) {
+                return res.status(403).send({success: false, msg: 'Authentication failed. User not found.'});
+            } else {
+
+                User.destroy({ where: {            id: decoded.id
+                }
+                })
+                    .then(function (users) {
+                        res.status(200).json(users);
+                    })
+                    .catch(function (error) {
+                        res.status(500).json(error);
+                    });
+
+            }
+        });
+    } else {
+        return res.status(403).send({success: false, msg: 'No token provided.'});
+    }
+
+
+
 });
 
 getToken = function (headers) {
